@@ -18,5 +18,6 @@ class ArenaConstant(Enum):
 	C_UNEXPLORED = (169,169,169)
 	C_OBSTACLE = (0,0,0)
 	C_CLEARED = (255,255,255)
+	C_WAYPOINT = (255,0,0)
 
 	BLOCK_SIZE = 30 # Block Size in Simulator (pixels)
