@@ -5,9 +5,17 @@ class Block:
 		self._isObstacle = False
 		self._isVirtualWall = False
 		self._isExplored = False
+		self._isWaypoint = False
+		self._lastCheck = 0
 
 	def get_pos(self):
 		return self._pos
+
+	def get_lastCheck(self):
+		return self._lastCheck
+
+	def increment_lastCheck(self):
+		self._lastCheck = self._lastCheck + 1
 
 	def set_obstacle(self, obstacle):
 		self._isObstacle = obstacle
@@ -26,3 +34,9 @@ class Block:
 
 	def is_explored(self):
 		return self._isExplored
+
+	def set_waypoint(self, waypoint):
+		self._isWaypoint = waypoint
+
+	def is_waypoint(self):
+		return self._isWaypoint
