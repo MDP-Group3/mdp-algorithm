@@ -1,0 +1,2 @@
+explore: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+obstacle: 001c00000000000000021f84000800100000043c080810002000800208880f00000000000080

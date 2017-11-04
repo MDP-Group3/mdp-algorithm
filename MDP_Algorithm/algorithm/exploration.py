@@ -21,6 +21,7 @@ class Exploration:
 		self._wp = None
 		self.last_calibrate = 0
 		self.calibration_mode = False
+		self.end_calibrate = False
 
 	def sense_and_update(self):
 		self._robot.set_sensor()
@@ -98,6 +99,7 @@ class Exploration:
 				if area_explored >= 100:
 					break
 
+			print(area_explored)
 			if area_explored > self._coverage_limit or int(round(time.time() * 1000)) > self._end_time:
 				break;
 
@@ -108,8 +110,6 @@ class Exploration:
 		 	while True:
 		 		_command = CommMgr.recv()
 		 		if _command == 'FP_START':
-		 			CommMgr.send('X', CommMgr.ARDUINO)
-		 			#time.sleep(1)
 		 			break
 
 		_go_to_wp_goal = FastestPath(self._explored_map, self._robot)
@@ -154,8 +154,14 @@ class Exploration:
 		if _loop:
 			self.turn_robot(Orientation.NORTH.value)
 			_pos = self._explored_map.findFurthestObstacle()
-			_go_to_furthest = FastestPath(self._explored_map, self._robot, True)#, self._real_map, self._surface)
-			_go_to_furthest.do_fastest_path(_pos)
+			if _pos is not None:
+				print(self._robot.get_pos())
+				_go_to_furthest = FastestPath(self._explored_map, self._robot, True)#, self._real_map, self._surface)
+				_go_to_furthest.do_fastest_path(_pos)
+				self._action_taken = []
+				_loop = False
+			else:
+				self._explored_map.reset_virtualwall()
 
 		if self.look_left():
 			self.move_robot(Action.LEFT)
@@ -242,6 +248,7 @@ class Exploration:
 
 			_return_to_start = FastestPath(self._explored_map, self._robot, True)#, self._real_map, self._surface)
 			_status = _return_to_start.do_fastest_path(Attribute.START_POS.value)
+			print(_status)
 
 		else:
 			_backtrace = list(self._action_taken)
@@ -263,13 +270,34 @@ class Exploration:
 			self.move_robot(Action.CALIBRATE)
 			if self.can_calibrate_on_spot(Orientation.getPrev(self._robot.get_ori())):
 				self.calibrate(Orientation.getPrev(self._robot.get_ori()))
+				#self.end_calibrate = False
 			elif self.can_calibrate_on_spot(Orientation.getNext(self._robot.get_ori())):
 				self.calibrate(Orientation.getNext(self._robot.get_ori()))
+				#self.end_calibrate = False
 		else:
 			_target_calibrate = self.get_calibrate_ori()
 			if _target_calibrate is not None:
 				self.last_calibrate = 0
 				self.calibrate(_target_calibrate)
+				#self.end_calibrate = False
+		self.calibration_mode = False
+
+		self.calibration_mode = True
+		if self.can_calibrate_on_spot(self._robot.get_ori()):
+			self.last_calibrate = 0
+			self.move_robot(Action.CALIBRATE)
+			if self.can_calibrate_on_spot(Orientation.getPrev(self._robot.get_ori())):
+				self.calibrate(Orientation.getPrev(self._robot.get_ori()))
+				#self.end_calibrate = False
+			elif self.can_calibrate_on_spot(Orientation.getNext(self._robot.get_ori())):
+				self.calibrate(Orientation.getNext(self._robot.get_ori()))
+				#self.end_calibrate = False
+		else:
+			_target_calibrate = self.get_calibrate_ori()
+			if _target_calibrate is not None:
+				self.last_calibrate = 0
+				self.calibrate(_target_calibrate)
+				#self.end_calibrate = False
 		self.calibration_mode = False
 		self.turn_robot(Orientation.NORTH.value)
 
@@ -332,6 +360,7 @@ class Exploration:
 		_cur_ori = self._robot.get_ori()
 		self.turn_robot(target_ori)
 		self.move_robot(Action.CALIBRATE)#, self._explored_map, False)
+		self.end_calibrate = True
 		self.turn_robot(_cur_ori)
 
 	def move_robot(self, action):
@@ -344,12 +373,16 @@ class Exploration:
 		#if self._surface is not None:
 		#	self._explored_map.draw(self._surface)
 		
-		if action is not Action.CALIBRATE:# and not self.calibration_mode:
+		if action is not Action.CALIBRATE and not self.calibration_mode:
 			self.sense_and_update()
 			self._robot.notify_android(action.value, self._explored_map)
 		else:
-			_status = CommMgr.recv()
-			print(_status)
+			if not self.end_calibrate:
+				_status = CommMgr.recv()
+				print(_status)
+			else:
+				self.sense_and_update()
+				self._robot.notify_android(action.value, self._explored_map)
 
 		if self._robot.is_actual_robot() and not self.calibration_mode:
 			self.calibration_mode = True
@@ -359,8 +392,10 @@ class Exploration:
 				self.move_robot(Action.CALIBRATE)
 				if self.can_calibrate_on_spot(Orientation.getPrev(self._robot.get_ori())):
 					self.calibrate(Orientation.getPrev(self._robot.get_ori()))
+					self.end_calibrate = False
 				elif self.can_calibrate_on_spot(Orientation.getNext(self._robot.get_ori())):
 					self.calibrate(Orientation.getNext(self._robot.get_ori()))
+					self.end_calibrate = False
 			else:
 				_last_act = self._action_taken[len(self._action_taken) - 1]
 				if _last_act == Action.UTURN:
@@ -373,6 +408,7 @@ class Exploration:
 					if _target_calibrate is not None:
 						self.last_calibrate = 0
 						self.calibrate(_target_calibrate)
+						self.end_calibrate = False
 
 			self.calibration_mode = False
 

@@ -7,9 +7,16 @@ class Block:
 		self._isExplored = False
 		self._isWaypoint = False
 		self._lastCheck = 0
+		self._obstacleCount = 0
 
 	def get_pos(self):
 		return self._pos
+
+	def get_obstacleCount(self):
+		return self._obstacleCount
+
+	def increment_obstacleCount(self):
+		self._obstacleCount += 1
 
 	def get_lastCheck(self):
 		return self._lastCheck

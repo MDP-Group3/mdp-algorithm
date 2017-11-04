@@ -149,12 +149,13 @@ class Sensor():
 		for i in range(self._range[0], self._range[1] + 1):
 			_block = (self._pos[0] + row_inc * i, self._pos[1] + col_inc * i)
 			if explored_map.check_valid_coord(_block):
+				_block_list[i] = _block
 				#if explored_map.get_block(_block).is_obstacle():
 				#	break
 				#if not explored_map.get_block(_block).is_explored():
 				#	_block_list[i] = _block
-				if explored_map.get_block(_block).get_lastCheck() < 15:
-					_block_list[i] = _block
+				#if explored_map.get_block(_block).get_lastCheck() < 5:
+				#	if explored_map.get_block(_block).get_obstacleCount() < 3:
 
 		# check if block is obstacle, if obstacle, exit function as the robot is block
 		print('{} => {}'.format(self._id, _block_list))
@@ -162,24 +163,44 @@ class Sensor():
 			explored_map.get_block(block).set_explored(True)
 			explored_map.get_block(block).increment_lastCheck()
 			if k == 1 and sensor_val < 10:
-				explored_map.set_obstacle(block, True)
-				print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
+				#if not explored_map.get_block(block).is_obstacle():
+				explored_map.get_block(block).increment_obstacleCount()
+				if explored_map.get_block(block).get_obstacleCount() < 3:
+					explored_map.set_obstacle(block, True)
+					explored_map.reset_virtualwall()
+					print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
 				return
 			elif k == 2 and sensor_val == 10:
-				explored_map.set_obstacle(block, True)
-				print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
+				#if not explored_map.get_block(block).is_obstacle():
+				explored_map.get_block(block).increment_obstacleCount()
+				if explored_map.get_block(block).get_obstacleCount() < 3:
+					explored_map.set_obstacle(block, True)
+					explored_map.reset_virtualwall()
+					print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
 				return
 			elif k == 3 and sensor_val == 20:
-				explored_map.set_obstacle(block, True)
-				print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
+				#if not explored_map.get_block(block).is_obstacle():
+				explored_map.get_block(block).increment_obstacleCount()
+				if explored_map.get_block(block).get_obstacleCount() < 3:
+					explored_map.set_obstacle(block, True)
+					explored_map.reset_virtualwall()
+					print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
 				return
 			elif k == 4 and sensor_val == 30:
-				explored_map.set_obstacle(block, True)
-				print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
+				#if not explored_map.get_block(block).is_obstacle():
+				explored_map.get_block(block).increment_obstacleCount()
+				if explored_map.get_block(block).get_obstacleCount() < 3:
+					explored_map.set_obstacle(block, True)
+					explored_map.reset_virtualwall()
+					print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
 				return
 			elif k == 5 and sensor_val == 40:
-				explored_map.set_obstacle(block, True)
-				print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
+				#if not explored_map.get_block(block).is_obstacle():
+				explored_map.get_block(block).increment_obstacleCount()
+				if explored_map.get_block(block).get_obstacleCount() < 3:
+					explored_map.set_obstacle(block, True)
+					explored_map.reset_virtualwall()
+					print('{} sets {} as {} => Sensor Value: {}'.format(self._id, block, True, sensor_val))
 				return
 			else:
 				if explored_map.get_block(block).is_obstacle():

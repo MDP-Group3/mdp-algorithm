@@ -32,7 +32,7 @@ def explore():
 def fp():
 	robot = Robot((18,1), True)
 	_real_map = Arena(robot)
-	ArenaUtils.load_arena_from_file(_real_map, 'map/17_week9.txt')
+	ArenaUtils.load_arena_from_file(_real_map, 'map/17_week10.txt')
 	print('Awaiting FP_START')
 	while True:
 		_command = CommMgr.recv()
@@ -41,7 +41,7 @@ def fp():
 			break
 
 	_go_to_wp_goal = FastestPath(_real_map, robot)
-	_status = _go_to_wp_goal.do_fastest_path_wp_goal((8,9), ArenaConstant.GOAL_POS.value)
+	_status = _go_to_wp_goal.do_fastest_path_wp_goal((7,10), ArenaConstant.GOAL_POS.value)
 	
 if __name__ == "__main__":
 	main()

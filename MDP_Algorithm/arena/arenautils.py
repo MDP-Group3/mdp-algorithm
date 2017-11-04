@@ -82,5 +82,30 @@ class ArenaUtils:
 		with open('map/generated/MapObstacle.txt', 'w') as file:
 			file.writelines("\n".join(obstacleArea))
 
-		ArenaUtils.hex_string('map/generated/MapExplored.txt')
-		ArenaUtils.hex_string('map/generated/MapObstacle.txt')
+		s = ""
+		num = 0
+		virtualobstacleArea = []
+		for row in range(ArenaConstant.ARENA_ROW.value):
+			for col in range(ArenaConstant.ARENA_COL.value):
+				if arena.get_block((row, col)).is_explored():
+					if arena.get_block((row,col)).is_obstacle():
+						s += "1"
+						num += 1
+					elif arena.get_block((row,col)).is_virtualwall():
+						s += "2"
+						num += 1
+					else:
+						s += "0"
+						num += 1
+			virtualobstacleArea.append(s)
+			s = ""
+		padding = 8 - (num % 8)
+		s = "0" * padding
+		virtualobstacleArea.append(s)
+		virtualobstacleArea.reverse()
+
+		with open('map/generated/MapObstacleVirtual.txt', 'w') as file:
+			file.writelines("\n".join(virtualobstacleArea))
+
+		#ArenaUtils.hex_string('map/generated/MapExplored.txt')
+		#ArenaUtils.hex_string('map/generated/MapObstacle.txt')

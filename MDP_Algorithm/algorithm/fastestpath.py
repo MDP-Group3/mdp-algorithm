@@ -103,6 +103,11 @@ class FastestPath:
 
 		_goal_path = self.do_fastest_path(goal_pos)
 
+		_path = self.execute_long_fp()
+		print(_path)
+
+	def execute_long_fp(self):
+		CommMgr.send('X', CommMgr.ARDUINO)
 		_long_cmd = []
 		_fCount = 0
 		for _act in self._actions:
@@ -129,10 +134,12 @@ class FastestPath:
 			_long_cmd.append(_command)
 			_fCount = 0
 
+		time.sleep(1)
 		CommMgr.send('{}{}'.format('FULL',''.join(_long_cmd)), CommMgr.ANDROID)
 		time.sleep(1)
 		self._robot.notify_arduino(''.join(_long_cmd))
-		print('{}'.format(''.join(_long_cmd)))
+		self._actions = []
+		return '{}'.format(''.join(_long_cmd))
 
 	def do_fastest_path(self, pos):
 		print('Fastest Path From {} to {}'.format(self._cur.get_pos(), pos))
@@ -152,7 +159,13 @@ class FastestPath:
 				print('Reached {}, Path Found!'.format(pos))
 				_path = self.get_path(pos)
 				self.print_fastest_path(_path)
-				return self.execute_path(_path, pos)
+				if self._exploration_mode:
+					#_path = self.simulate_path(_path, pos)
+					#print(_path)
+					#return self.execute_long_fp()
+					return self.execute_path_exploration(_path, pos)
+				else:
+					return self.simulate_path(_path, pos)
 
 			# Top Neighbour
 			if self._map.check_valid_coord((self._cur.get_pos()[0] - 1, self._cur.get_pos()[1])):
@@ -212,16 +225,57 @@ class FastestPath:
 
 		return _actual_path
 
-	def execute_path(self, path, goal_pos):
+	def execute_path_exploration(self, path, goal_pos):
 		_output_string = []
 
 		_temp_block = path.pop()
 
 		_ori_target = None
 
-		#_temp_robot = Robot(self._robot.get_pos(), False)
-		#_temp_robot.set_ori(self._robot.get_ori())
-		#_temp_robot.set_speed(0)
+		_temp_robot = Robot(self._robot.get_pos(), False)
+		_temp_robot.set_ori(self._robot.get_ori())
+		_temp_robot.set_speed(0)
+
+		while _temp_robot.get_pos()[0] != goal_pos[0] or _temp_robot.get_pos()[1] != goal_pos[1]:
+			if _temp_robot.get_pos()[0] == _temp_block.get_pos()[0] and _temp_robot.get_pos()[1] == _temp_block.get_pos()[1]:
+				_temp_block = path.pop()
+
+			_ori_target = self.get_target_ori(_temp_robot.get_pos(), _temp_robot.get_ori(), _temp_block)
+
+			_action = None
+			if _temp_robot.get_ori() != _ori_target:
+				_action = self.get_target_move(_temp_robot.get_ori(), _ori_target)
+			else:
+				_action = Action.FORWARD
+
+			print('Action {} from {} to {}'.format(_action.value, _temp_robot.get_pos(), _temp_block.get_pos()))
+			_temp_robot.move(_action)
+			self._actions.append(_action)
+			_output_string.append(_action.value)
+
+
+		for _act in self._actions:
+			if _act == Action.FORWARD:
+				if not self.can_move_forward():
+					print("Fastest Path Execution terminated!")
+					return "T"
+
+			self._robot.move(_act)
+			self._robot.notify(_act.value, self._map, True)
+
+			self._robot.set_sensor()
+			self._robot.sense(self._map)#, self._real_map)
+			if self._surface is not None:
+				self._map.draw(self._surface)
+
+		return ''.join(_output_string)
+
+	def simulate_path(self, path, goal_pos):
+		_output_string = []
+
+		_temp_block = path.pop()
+
+		_ori_target = None
 
 		while self._robot.get_pos()[0] != goal_pos[0] or self._robot.get_pos()[1] != goal_pos[1]:
 			if self._robot.get_pos()[0] == _temp_block.get_pos()[0] and self._robot.get_pos()[1] == _temp_block.get_pos()[1]:
@@ -239,23 +293,6 @@ class FastestPath:
 			self._robot.move(_action)
 			self._actions.append(_action)
 			_output_string.append(_action.value)
-
-		if self._exploration_mode:
-			for _act in self._actions:
-				if _act == Action.FORWARD:
-					if not self.can_move_forward():
-						print("Fastest Path Execution terminated!")
-						return "T"
-
-				self._robot.move(_act)
-				self._robot.notify(_act.value, self._map)
-				_r = CommMgr.recv()
-				print(_r)
-
-				self._robot.set_sensor()
-				self._robot.sense(self._map)#, self._real_map)
-				if self._surface is not None:
-					self._map.draw(self._surface)
 
 		return ''.join(_output_string)
 

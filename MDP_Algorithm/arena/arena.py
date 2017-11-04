@@ -133,20 +133,36 @@ class Arena:
 
 		_furthest = max(_distance)
 		if _distance.index(_furthest) == 0:
-			_new_row = self._robot.get_pos[0] - _furthest - 2
-			_new_col = self._robot.get_pos[1]
+			_new_row = self._robot.get_pos()[0] - _furthest - 2
+			if _new_row < 0:
+				_new_row = 0
+			elif _new_row > 19:
+				_new_row = 19
+			_new_col = self._robot.get_pos()[1]
 			return (_new_row, _new_col)
 		elif _distance.index(_furthest) == 1:
-			_new_row = self._robot.get_pos[0] + _furthest - 2
-			_new_col = self._robot.get_pos[1]
+			_new_row = self._robot.get_pos()[0] + _furthest - 2
+			if _new_row < 0:
+				_new_row = 0
+			elif _new_row > 19:
+				_new_row = 19
+			_new_col = self._robot.get_pos()[1]
 			return (_new_row, _new_col)
 		elif _distance.index(_furthest) == 2:
-			_new_row = self._robot.get_pos[0]
-			_new_col = self._robot.get_pos[1] + _furthest - 2
+			_new_row = self._robot.get_pos()[0]
+			_new_col = self._robot.get_pos()[1] + _furthest - 2
+			if _new_col < 0:
+				_new_col = 0
+			elif _new_col > 14:
+				_new_col = 14
 			return (_new_row, _new_col)
 		elif _distance.index(_furthest) == 4:
-			_new_row = self._robot.get_pos[0]
-			_new_col = self._robot.get_pos[1] - _furthest - 2
+			_new_row = self._robot.get_pos()[0]
+			_new_col = self._robot.get_pos()[1] - _furthest - 2
+			if _new_col < 0:
+				_new_col = 0
+			elif _new_col > 14:
+				_new_col = 14
 			return (_new_row, _new_col)
 
 	def checkNorth(self):
@@ -156,25 +172,7 @@ class Arena:
 		_distance_to_wall = 0
 		while not _found:
 			if self.check_valid_coord((_cur_row, _cur_col)):
-				if self.get_block((_cur_row, _cur_col - 1)).is_obstacle() and self.get_block((_cur_row, _cur_col)).is_obstacle() and self.get_block((_cur_row, _cur_col + 1)).is_obstacle():
-					_distance_to_wall = abs(int(_cur_row - self._robot.get_pos()[0]))
-					_found = True
-			else:
-				_distance_to_wall = abs(int(_cur_row - self._robot.get_pos()[0]))
-				_found = True
-
-			_cur_row += 1
-
-		return _distance_to_wall
-
-	def checkSouth(self):
-		_found = False
-		_cur_row = self._robot.get_pos()[0] + 2
-		_cur_col = self._robot.get_pos()[1]
-		_distance_to_wall = 0
-		while not _found:
-			if self.check_valid_coord((_cur_row, _cur_col)):
-				if self.get_block((_cur_row, _cur_col - 1)).is_obstacle() and self.get_block((_cur_row, _cur_col)).is_obstacle() and self.get_block((_cur_row, _cur_col + 1)).is_obstacle():
+				if self.get_block((_cur_row, _cur_col - 1)).is_obstacle() or self.get_block((_cur_row, _cur_col)).is_obstacle() or self.get_block((_cur_row, _cur_col + 1)).is_obstacle():
 					_distance_to_wall = abs(int(_cur_row - self._robot.get_pos()[0]))
 					_found = True
 			else:
@@ -185,6 +183,24 @@ class Arena:
 
 		return _distance_to_wall
 
+	def checkSouth(self):
+		_found = False
+		_cur_row = self._robot.get_pos()[0] + 2
+		_cur_col = self._robot.get_pos()[1]
+		_distance_to_wall = 0
+		while not _found:
+			if self.check_valid_coord((_cur_row, _cur_col)):
+				if self.get_block((_cur_row, _cur_col - 1)).is_obstacle() or self.get_block((_cur_row, _cur_col)).is_obstacle() or self.get_block((_cur_row, _cur_col + 1)).is_obstacle():
+					_distance_to_wall = abs(int(_cur_row - self._robot.get_pos()[0]))
+					_found = True
+			else:
+				_distance_to_wall = abs(int(_cur_row - self._robot.get_pos()[0]))
+				_found = True
+
+			_cur_row += 1
+
+		return _distance_to_wall
+
 	def checkEast(self):
 		_found = False
 		_cur_row = self._robot.get_pos()[0]
@@ -192,7 +208,7 @@ class Arena:
 		_distance_to_wall = 0
 		while not _found:
 			if self.check_valid_coord((_cur_row, _cur_col)):
-				if self.get_block((_cur_row - 1, _cur_col)).is_obstacle() and self.get_block((_cur_row, _cur_col)).is_obstacle() and self.get_block((_cur_row + 1, _cur_col)).is_obstacle():
+				if self.get_block((_cur_row - 1, _cur_col)).is_obstacle() or self.get_block((_cur_row, _cur_col)).is_obstacle() or self.get_block((_cur_row + 1, _cur_col)).is_obstacle():
 					_distance_to_wall = abs(int(_cur_col - self._robot.get_pos()[1]))
 					_found = True
 			else:
@@ -210,7 +226,7 @@ class Arena:
 		_distance_to_wall = 0
 		while not _found:
 			if self.check_valid_coord((_cur_row, _cur_col)):
-				if self.get_block((_cur_row - 1, _cur_col)).is_obstacle() and self.get_block((_cur_row, _cur_col)).is_obstacle() and self.get_block((_cur_row + 1, _cur_col)).is_obstacle():
+				if self.get_block((_cur_row - 1, _cur_col)).is_obstacle() or self.get_block((_cur_row, _cur_col)).is_obstacle() or self.get_block((_cur_row + 1, _cur_col)).is_obstacle():
 					_distance_to_wall = abs(int(_cur_col - self._robot.get_pos()[1]))
 					_found = True
 			else:
